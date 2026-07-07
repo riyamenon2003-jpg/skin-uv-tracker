@@ -408,6 +408,26 @@
 const STORAGE_KEY = 'skinscope-entries';
 let skinType = null;
 
+// ---------- Portable storage ----------
+// window.storage only exists inside Claude's artifact preview. On a real
+// deployed site (GitHub Pages, etc.) it doesn't exist, so we fall back to
+// localStorage with the same get/set interface.
+const storage = (window.storage) ? window.storage : {
+  async get(key) {
+    const val = localStorage.getItem(key);
+    if (val === null) throw new Error('not found');
+    return { key, value: val };
+  },
+  async set(key, value) {
+    localStorage.setItem(key, value);
+    return { key, value };
+  },
+  async delete(key) {
+    localStorage.removeItem(key);
+    return { key, deleted: true };
+  }
+};
+
 // ---------- Tabs ----------
 document.querySelectorAll('.tab').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -475,11 +495,11 @@ function checkQuizComplete() {
       6: "Type VI — deeply pigmented, almost never burns."
     };
     document.getElementById('quizResult').innerHTML =
-      `<div class="banner">Your estimated skin type: <strong>${descs[type]}</strong> This will personalize your UV tracker recommendations.</div>`;
-    if (window.storage) {
-      window.storage.set('skin-type', String(type), false).catch(()=>{});
-    }
+      `<div class="banner">Your estimated skin type: <strong>${descs[type]}</strong> This will personalize your UV tracker recommendations.</div>
+       <button class="primary" id="quizToUvBtn" style="margin-top:14px;">See your safe minutes outside →</button>`;
+    storage.set('skin-type', String(type)).catch(()=>{});
     if (typeof renderTodayDashboard === 'function') renderTodayDashboard();
+    document.getElementById('quizToUvBtn').addEventListener('click', () => goToTab('uv'));
   }
 }
 
@@ -488,7 +508,7 @@ renderQuiz();
 // load saved skin type
 (async () => {
   try {
-    const res = await window.storage.get('skin-type', false);
+    const res = await storage.get('skin-type');
     if (res && res.value) {
       skinType = parseInt(res.value, 10);
     }
@@ -774,7 +794,7 @@ wireUVButtons();
 // ---------- Mole Journal ----------
 async function loadEntries() {
   try {
-    const res = await window.storage.get('mole-entries', false);
+    const res = await storage.get('mole-entries');
     return res && res.value ? JSON.parse(res.value) : [];
   } catch (e) {
     return [];
@@ -782,7 +802,7 @@ async function loadEntries() {
 }
 
 async function saveEntries(entries) {
-  await window.storage.set('mole-entries', JSON.stringify(entries), false);
+  await storage.set('mole-entries', JSON.stringify(entries));
 }
 
 function renderEntries(entries) {
@@ -850,7 +870,7 @@ function todayKey() {
 
 async function getTodayMinutes() {
   try {
-    const res = await window.storage.get(todayKey(), false);
+    const res = await storage.get(todayKey());
     return res && res.value ? parseInt(res.value, 10) : 0;
   } catch (e) {
     return 0;
@@ -858,7 +878,7 @@ async function getTodayMinutes() {
 }
 
 async function setTodayMinutes(mins) {
-  await window.storage.set(todayKey(), String(Math.max(0, mins)), false);
+  await storage.set(todayKey(), String(Math.max(0, mins)));
 }
 
 async function renderSunlog() {
