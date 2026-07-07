@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkinScope — UV Safety & Skin Check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #24304A;
+    --navy-light: #34435F;
+    --coral: #E2603D;
+    --coral-dark: #C14A2B;
+    --skin: #E8D9C3;
+    --skin-light: #F6EEE2;
+    --cream: #FAFAF8;
+    --charcoal: #1A1A1A;
+    --gray: #5B5F66;
+    --line: #E6E4DF;
+    --green: #3D8361;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #F6F5F1;
+    background-image: radial-gradient(circle at 15% 0%, rgba(31,58,52,0.05), transparent 45%);
+    color: var(--charcoal);
+    font-family: 'Inter', sans-serif;
+    font-size: 15.5px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 40px 20px 90px; }
+
+  header.hero {
+    background: linear-gradient(155deg, var(--navy) 0%, #16302A 100%);
+    color: var(--cream);
+    border-radius: 24px;
+    padding: 40px 32px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 40px -20px rgba(31,58,52,0.45);
+  }
+  header.hero::after {
+    content: '';
+    position: absolute;
+    top: -60%; right: -20%;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(185,138,62,0.25), transparent 70%);
+    pointer-events: none;
+  }
+  header.hero h1 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+    position: relative;
+  }
+  header.hero p {
+    margin: 0;
+    color: rgba(251,248,244,0.72);
+    font-size: 14.5px;
+    max-width: 42ch;
+    position: relative;
+    line-height: 1.5;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    background: #EDEAE3;
+    border-radius: 14px;
+    padding: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 9px 14px;
+    background: none;
+    border: none;
+    color: var(--gray);
+    cursor: pointer;
+    border-radius: 10px;
+    white-space: nowrap;
+    transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+  }
+  .tab.active {
+    color: var(--navy);
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(31,58,52,0.12);
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: 20px;
+    padding: 26px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 2px rgba(20,20,20,0.03), 0 12px 28px -18px rgba(20,20,20,0.10);
+  }
+  .card h2 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+  .card .eyebrow {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--coral-dark);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .muted { color: #454A52; font-size: 14.5px; line-height: 1.6; }
+
+  button.primary {
+    background: var(--navy);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.18s ease;
+  }
+  button.primary:hover { background: var(--navy-light); transform: translateY(-1px); }
+  button.secondary {
+    background: #F3EFE7;
+    color: var(--navy);
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.18s ease;
+  }
+  button.secondary:hover { background: var(--skin-light); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Sun arc */
+  .arc-box { position: relative; width: 100%; height: 160px; }
+  .arc-svg { width: 100%; height: 100%; }
+  .uv-readout {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .uv-num { font-family: 'Poppins', sans-serif; font-size: 46px; font-weight: 800; color: var(--navy); letter-spacing: -0.02em; }
+  .uv-label { font-size: 13px; color: var(--gray); font-weight: 600; }
+  .risk-pill {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .quiz-q { margin-bottom: 16px; }
+  .quiz-q label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .quiz-opts { display: flex; flex-direction: column; gap: 6px; }
+  .opt {
+    border: 1px solid rgba(0,0,0,0.07);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    background: #FAF9F6;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .opt.selected { border-color: var(--coral); background: var(--skin-light); font-weight: 600; }
+
+  .stat-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+  .stat {
+    flex: 1;
+    min-width: 130px;
+    background: #FAF9F6;
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .stat .n { font-family: 'Poppins', sans-serif; font-size: 21px; font-weight: 800; color: var(--navy); letter-spacing: -0.01em; }
+  .stat .l { font-size: 11.5px; color: var(--gray); margin-top: 2px; }
+
+  .abcde-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 10px; }
+  .abcde-item { display: flex; gap: 12px; align-items: flex-start; }
+  .abcde-letter {
+    flex-shrink: 0;
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    background: var(--navy);
+    color: white;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .abcde-item .t { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+  .abcde-item .d { font-size: 13px; color: var(--gray); }
+
+  .journal-form { display: flex; flex-direction: column; gap: 10px; }
+  .journal-form input[type="text"], .journal-form textarea, .journal-form select {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 11px 13px;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 10px;
+    background: #FAF9F6;
+  }
+  .journal-form textarea { resize: vertical; min-height: 60px; }
+  .entry {
+    display: flex;
+    gap: 14px;
+    padding: 14px 0;
+    border-top: 1px solid rgba(0,0,0,0.06);
+  }
+  .entry img { width: 60px; height: 60px; object-fit: cover; border-radius: 10px; flex-shrink: 0; background: var(--skin-light); }
+  .entry .meta { font-size: 12px; color: var(--gray); margin-bottom: 2px; }
+  .entry .note { font-size: 14px; }
+
+  .banner {
+    background: var(--skin-light);
+    border: none;
+    border-radius: 12px;
+    padding: 13px 16px;
+    font-size: 13px;
+    color: var(--navy);
+    margin-top: 14px;
+  }
+  .banner strong { color: var(--coral-dark); }
+
+  footer.disclaimer {
+    font-size: 11.5px;
+    color: var(--gray);
+    text-align: center;
+    margin-top: 24px;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <h1>SkinScope</h1>
+    <p>Know your UV risk right now, and keep an eye on your skin over time.</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="today">Today</button>
+    <button class="tab" data-tab="uv">UV Tracker</button>
+    <button class="tab" data-tab="quiz">Skin Type</button>
+    <button class="tab" data-tab="compare">Compare Guide</button>
+    <button class="tab" data-tab="sunlog">Sun Log</button>
+    <button class="tab" data-tab="journal">Mole Journal</button>
+  </div>
+
+  <!-- TODAY DASHBOARD -->
+  <div id="tab-today">
+    <div class="card">
+      <div class="eyebrow" id="todayDateLabel">Today</div>
+      <h2>Your day at a glance</h2>
+      <div id="todayDashboard" style="margin-top:14px;"></div>
+    </div>
+  </div>
+
+  <!-- UV TAB -->
+  <div id="tab-uv" style="display:none">
+    <div class="card">
+      <div class="eyebrow">Right now</div>
+      <h2>UV Index</h2>
+      <div id="uvContent">
+        <p class="muted">Type your city to get a live UV reading and a safe-exposure estimate for your skin type.</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <input type="text" id="cityInput" placeholder="e.g. Chicago" style="flex:1; min-width:160px; font-family:'Inter',sans-serif; font-size:14px; padding:10px 12px; border:1px solid rgba(0,0,0,0.08); border-radius:10px; background:#FAF9F6;">
+          <button class="primary" id="citySearchBtn">Get UV index</button>
+        </div>
+        <button class="secondary" id="locBtn" style="margin-top:10px;">Or use my device location</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUIZ TAB -->
+  <div id="tab-quiz" style="display:none">
+    <div class="card">
+      <div class="eyebrow">Fitzpatrick scale</div>
+      <h2>What's your skin type?</h2>
+      <p class="muted">This is a real dermatology classification based on how your skin responds to sun exposure. It personalizes your safe-exposure estimate.</p>
+      <div id="quizArea" style="margin-top:16px;"></div>
+      <div id="quizResult"></div>
+    </div>
+  </div>
+
+  <!-- COMPARE GUIDE TAB -->
+  <div id="tab-compare" style="display:none">
+    <div class="card">
+      <div class="eyebrow">Learn to look</div>
+      <h2>What each ABCDE sign looks like</h2>
+      <p class="muted">These are simplified illustrations, not real photos, to show the shape of each pattern. Use them to learn what to look for — not to match your spot against.</p>
+      <div id="compareRefs" style="margin-top:14px;"></div>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">Real examples, reviewed by dermatologists</div>
+      <h2>See actual photos</h2>
+      <p class="muted">The illustrations above teach the pattern. For real clinical photos across a range of skin tones, the American Academy of Dermatology maintains a public gallery reviewed by board-certified dermatologists — this takes you off SkinScope to their site.</p>
+      <a href="https://www.aad.org/public/diseases/skin-cancer" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+        <button class="secondary" style="margin-top:4px;">See real photos on AAD.org ↗</button>
+      </a>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">Look for yourself</div>
+      <h2>Compare your own photo</h2>
+      <p class="muted">Upload a photo of a spot and view it side by side with the reference illustrations above. SkinScope doesn't analyze or identify the photo — you're doing the comparing, using what you just learned.</p>
+      <input type="file" id="compareInput" accept="image/*" style="margin-top:8px;">
+      <div id="compareUserPhoto"></div>
+      <div class="banner"><strong>Not a diagnosis.</strong> SkinScope never tells you what a spot is. If anything looks asymmetric, has an irregular border, uneven color, is growing, or is changing — see a dermatologist. That's the only reliable next step.</div>
+    </div>
+  </div>
+
+  <!-- SUN LOG TAB -->
+  <div id="tab-sunlog" style="display:none">
+    <div class="card">
+      <div class="eyebrow">Today's exposure</div>
+      <h2>Time spent outside</h2>
+      <p class="muted">Log minutes outside today, or import your Apple Health export to pull in "Time in Daylight" data automatically from your Apple Watch.</p>
+
+      <div style="margin-top:14px;">
+        <div class="stat-row">
+          <div class="stat">
+            <div class="n" id="sunlogTotal">0 min</div>
+            <div class="l">Logged outside today</div>
+          </div>
+          <div class="stat">
+            <div class="n" id="sunlogBudget">—</div>
+            <div class="l">Your estimated safe minutes (from UV Tracker)</div>
+          </div>
+        </div>
+        <div style="background:var(--line); border-radius:8px; height:10px; margin-top:14px; overflow:hidden;">
+          <div id="sunlogBar" style="background:var(--coral); height:100%; width:0%; transition:width 0.3s;"></div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:18px;">
+        <input type="number" id="manualMinutes" placeholder="Minutes" min="0" style="width:100px; font-family:'Inter',sans-serif; font-size:14px; padding:10px 12px; border:1px solid rgba(0,0,0,0.08); border-radius:10px; background:#FAF9F6;">
+        <button class="primary" id="addMinutesBtn">Add to today's log</button>
+        <button class="secondary" id="resetSunlogBtn">Reset today</button>
+      </div>
+
+      <div class="banner" id="sunlogWarning" style="display:none;"></div>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">Optional</div>
+      <h2>Import from Apple Health</h2>
+      <p class="muted">In the Health app: tap your profile picture → Export All Health Data → share the export.zip to this device, then unzip it and upload the <code>export.xml</code> file here. This stays on your device — nothing is uploaded anywhere.</p>
+      <input type="file" id="healthFileInput" accept=".xml" style="margin-top:10px;">
+      <div id="healthImportStatus" class="muted" style="margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <!-- JOURNAL TAB -->
+  <div id="tab-journal" style="display:none">
+    <div class="card">
+      <div class="eyebrow">Self-check guide</div>
+      <h2>The ABCDE rule</h2>
+      <p class="muted">A quick way to know what's worth watching, and what's worth a dermatologist visit.</p>
+      <div class="abcde-grid" id="abcdeList"></div>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">Your log</div>
+      <h2>Track a spot over time</h2>
+      <p class="muted">Photos and notes stay on this device. Comparing the same spot every few weeks is the whole point — you're looking for change.</p>
+      <div class="journal-form">
+        <input type="file" id="photoInput" accept="image/*">
+        <input type="text" id="labelInput" placeholder="Label (e.g. 'left forearm')">
+        <textarea id="noteInput" placeholder="What do you notice? (size, color, shape...)"></textarea>
+        <button class="primary" id="addEntryBtn">Add entry</button>
+      </div>
+      <div class="banner"><strong>Not a diagnosis.</strong> This journal only helps you notice change — it can't tell you what a spot is. Any new, changing, or unusual mole should be checked by a dermatologist.</div>
+      <div id="entriesList"></div>
+    </div>
+  </div>
+
+  <footer class="disclaimer">
+    SkinScope is an educational tool, not a medical device. It does not diagnose skin conditions.<br>
+    For any concerning mole or skin change, see a licensed dermatologist.
+  </footer>
+</div>
+
+<script>
+const STORAGE_KEY = 'skinscope-entries';
+let skinType = null;
+
+// ---------- Tabs ----------
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    ['today','uv','quiz','compare','sunlog','journal'].forEach(t => {
+      document.getElementById('tab-'+t).style.display = (t === btn.dataset.tab) ? 'block' : 'none';
+    });
+    if (btn.dataset.tab === 'today' && typeof renderTodayDashboard === 'function') renderTodayDashboard();
+  });
+});
+
+function goToTab(name) {
+  const btn = document.querySelector(`.tab[data-tab="${name}"]`);
+  if (btn) btn.click();
+}
+
+// ---------- Fitzpatrick Quiz ----------
+const questions = [
+  { q: "What's your natural eye color?", opts: ["Light blue or light green", "Blue or gray", "Green or hazel", "Brown", "Dark brown", "Black or near-black"] },
+  { q: "What's your natural hair color?", opts: ["Red or light blonde", "Blonde", "Chestnut/dark blonde", "Dark brown", "Black", "Blue-black"] },
+  { q: "What happens when you stay in the sun with no protection?", opts: ["Always burns, peels", "Usually burns, peels", "Sometimes mild burn", "Rarely burns", "Almost never burns", "Never burns"] },
+  { q: "Do you tan?", opts: ["Never, freckles instead", "Rarely, lightly", "Sometimes, uneven", "Often, moderately", "Easily, quite dark", "Always, very dark"] },
+];
+let quizAnswers = new Array(questions.length).fill(null);
+
+function renderQuiz() {
+  const area = document.getElementById('quizArea');
+  area.innerHTML = '';
+  questions.forEach((item, qi) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-q';
+    const label = document.createElement('label');
+    label.textContent = item.q;
+    div.appendChild(label);
+    const optsDiv = document.createElement('div');
+    optsDiv.className = 'quiz-opts';
+    item.opts.forEach((opt, oi) => {
+      const o = document.createElement('div');
+      o.className = 'opt' + (quizAnswers[qi] === oi ? ' selected' : '');
+      o.textContent = opt;
+      o.addEventListener('click', () => {
+        quizAnswers[qi] = oi;
+        renderQuiz();
+        checkQuizComplete();
+      });
+      optsDiv.appendChild(o);
+    });
+    div.appendChild(optsDiv);
+    area.appendChild(div);
+  });
+}
+
+function checkQuizComplete() {
+  if (quizAnswers.every(a => a !== null)) {
+    const avg = quizAnswers.reduce((a,b) => a+b, 0) / quizAnswers.length;
+    const type = Math.min(6, Math.max(1, Math.round(avg) + 1));
+    skinType = type;
+    const descs = {
+      1: "Type I — very fair, always burns, never tans.",
+      2: "Type II — fair, burns easily, tans minimally.",
+      3: "Type III — medium, sometimes burns, tans gradually.",
+      4: "Type IV — olive, rarely burns, tans easily.",
+      5: "Type V — brown, very rarely burns, tans deeply.",
+      6: "Type VI — deeply pigmented, almost never burns."
+    };
+    document.getElementById('quizResult').innerHTML =
+      `<div class="banner">Your estimated skin type: <strong>${descs[type]}</strong> This will personalize your UV tracker recommendations.</div>`;
+    if (window.storage) {
+      window.storage.set('skin-type', String(type), false).catch(()=>{});
+    }
+    if (typeof renderTodayDashboard === 'function') renderTodayDashboard();
+  }
+}
+
+renderQuiz();
+
+// load saved skin type
+(async () => {
+  try {
+    const res = await window.storage.get('skin-type', false);
+    if (res && res.value) {
+      skinType = parseInt(res.value, 10);
+    }
+  } catch(e) { /* not set yet */ }
+  if (typeof renderTodayDashboard === 'function') renderTodayDashboard();
+})();
+
+// ---------- Compare Guide (illustrated reference pairs, not real photos) ----------
+function moleShape(cx, cy, r, jaggedness, seed) {
+  // draws a rough blob outline using a seeded wobble, for "irregular" examples
+  const pts = 16;
+  let d = '';
+  for (let i = 0; i <= pts; i++) {
+    const ang = (i / pts) * Math.PI * 2;
+    const wobble = 1 + jaggedness * Math.sin(ang * 3 + seed) * 0.5 + jaggedness * Math.sin(ang * 7 + seed) * 0.25;
+    const x = cx + Math.cos(ang) * r * wobble;
+    const y = cy + Math.sin(ang) * r * wobble;
+    d += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+  }
+  return d + 'Z';
+}
+
+const compareData = [
+  {
+    letter: 'A', title: 'Symmetry',
+    goodLabel: 'Common: symmetric', watchLabel: 'Watch for: asymmetric',
+    goodSvg: `<circle cx="30" cy="30" r="20" fill="#B08A6B"/>`,
+    watchSvg: `<path d="${moleShape(30,30,20,0.6,1.2)}" fill="#B08A6B"/>`
+  },
+  {
+    letter: 'B', title: 'Border',
+    goodLabel: 'Common: smooth edge', watchLabel: 'Watch for: ragged edge',
+    goodSvg: `<circle cx="30" cy="30" r="20" fill="#8B6A4E"/>`,
+    watchSvg: `<path d="${moleShape(30,30,20,0.35,3.4)}" fill="#8B6A4E"/>`
+  },
+  {
+    letter: 'C', title: 'Color',
+    goodLabel: 'Common: uniform tone', watchLabel: 'Watch for: multiple tones',
+    goodSvg: `<circle cx="30" cy="30" r="20" fill="#7A5A3E"/>`,
+    watchSvg: `<circle cx="30" cy="30" r="20" fill="#7A5A3E"/><path d="M20,20 Q30,15 38,24 Q34,32 24,30 Z" fill="#2E2118"/><circle cx="36" cy="36" r="5" fill="#C77B4A"/>`
+  },
+  {
+    letter: 'D', title: 'Diameter',
+    goodLabel: 'Common: under ~6mm', watchLabel: 'Watch for: larger, growing',
+    goodSvg: `<circle cx="30" cy="30" r="9" fill="#8B6A4E"/>`,
+    watchSvg: `<circle cx="30" cy="30" r="22" fill="#8B6A4E"/>`
+  },
+  {
+    letter: 'E', title: 'Evolving',
+    goodLabel: 'Common: stable over time', watchLabel: 'Watch for: changing over time',
+    goodSvg: `<circle cx="17" cy="30" r="12" fill="#8B6A4E"/><circle cx="43" cy="30" r="12" fill="#8B6A4E"/><text x="30" y="55" font-size="8" fill="#8FA3C2" text-anchor="middle" font-family="Inter,sans-serif">then → now</text>`,
+    watchSvg: `<circle cx="17" cy="30" r="8" fill="#8B6A4E"/><path d="${moleShape(43,30,15,0.5,2.1)}" fill="#5C3A22"/><text x="30" y="55" font-size="8" fill="#8FA3C2" text-anchor="middle" font-family="Inter,sans-serif">then → now</text>`
+  }
+];
+
+function renderCompareRefs() {
+  const el = document.getElementById('compareRefs');
+  el.innerHTML = compareData.map(item => `
+    <div style="display:flex; align-items:center; gap:16px; padding:14px 0; border-top:1px solid var(--line);">
+      <div class="abcde-letter" style="flex-shrink:0;">${item.letter}</div>
+      <div style="flex:1; min-width:0;">
+        <div class="t" style="margin-bottom:8px;">${item.title}</div>
+        <div style="display:flex; gap:18px; flex-wrap:wrap;">
+          <div style="text-align:center;">
+            <svg width="60" height="60" viewBox="0 0 60 60">${item.goodSvg}</svg>
+            <div style="font-size:11px; color:var(--green); font-weight:600; margin-top:4px;">${item.goodLabel}</div>
+          </div>
+          <div style="text-align:center;">
+            <svg width="60" height="60" viewBox="0 0 60 60">${item.watchSvg}</svg>
+            <div style="font-size:11px; color:var(--coral-dark); font-weight:600; margin-top:4px;">${item.watchLabel}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+renderCompareRefs();
+
+document.getElementById('compareInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  const holder = document.getElementById('compareUserPhoto');
+  if (!file) { holder.innerHTML = ''; return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    holder.innerHTML = `
+      <div style="margin-top:14px;">
+        <div class="muted" style="margin-bottom:6px;">Your photo — compare it against the reference shapes above.</div>
+        <img src="${reader.result}" style="max-width:220px; max-height:220px; border-radius:10px; object-fit:cover;">
+      </div>
+    `;
+  };
+  reader.readAsDataURL(file);
+});
+
+// ---------- ABCDE list ----------
+const abcde = [
+  { l: 'A', t: 'Asymmetry', d: 'One half looks different from the other half.' },
+  { l: 'B', t: 'Border', d: 'Edges are ragged, notched, or blurred rather than smooth.' },
+  { l: 'C', t: 'Color', d: 'Uneven shading — multiple browns, black, or patches of red, white, blue.' },
+  { l: 'D', t: 'Diameter', d: 'Larger than about 6mm (roughly a pencil eraser), though some can be smaller.' },
+  { l: 'E', t: 'Evolving', d: 'Changing in size, shape, color, or elevation over time.' },
+];
+document.getElementById('abcdeList').innerHTML = abcde.map(a => `
+  <div class="abcde-item">
+    <div class="abcde-letter">${a.l}</div>
+    <div><div class="t">${a.t}</div><div class="d">${a.d}</div></div>
+  </div>
+`).join('');
+
+// ---------- UV Tracker ----------
+let lastSafeMinutes = null;
+let lastUV = null;
+let lastRiskLabel = null;
+let lastPlaceLabel = '';
+
+function uvRiskInfo(uv) {
+  if (uv < 3) return { label: 'Low', color: '#3D8361' };
+  if (uv < 6) return { label: 'Moderate', color: '#E27E5F' };
+  if (uv < 8) return { label: 'High', color: '#E2603D' };
+  if (uv < 11) return { label: 'Very High', color: '#C14A2B' };
+  return { label: 'Extreme', color: '#8C2E1A' };
+}
+
+function safeMinutes(uv, type) {
+  // rough, illustrative estimate only — base minutes-to-burn by Fitzpatrick type at UV index 1, scaled inversely with UV
+  const baseAtUV1 = { 1: 67, 2: 100, 3: 133, 4: 200, 5: 300, 6: 500 };
+  const t = type || 3;
+  const base = baseAtUV1[t];
+  return Math.round(base / Math.max(uv, 0.5));
+}
+
+function buildArcSVG(hourlyUV, currentHourIdx) {
+  const w = 320, h = 130, pad = 20;
+  const maxUV = Math.max(...hourlyUV, 8);
+  const points = hourlyUV.map((v, i) => {
+    const x = pad + (i / (hourlyUV.length - 1)) * (w - 2*pad);
+    const y = h - pad - (v / maxUV) * (h - 2*pad);
+    return [x, y];
+  });
+  const pathD = points.map((p, i) => (i===0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  const areaD = pathD + ` L${points[points.length-1][0]},${h-pad} L${points[0][0]},${h-pad} Z`;
+  const curX = points[currentHourIdx] ? points[currentHourIdx][0] : points[0][0];
+  const curY = points[currentHourIdx] ? points[currentHourIdx][1] : points[0][1];
+  return `
+    <svg class="arc-svg" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="uvFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#E2603D" stop-opacity="0.35"/>
+          <stop offset="100%" stop-color="#E2603D" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="${areaD}" fill="url(#uvFill)"/>
+      <path d="${pathD}" fill="none" stroke="#E2603D" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="${curX}" cy="${curY}" r="5" fill="#24304A" stroke="white" stroke-width="2"/>
+      <line x1="${pad}" y1="${h-pad}" x2="${w-pad}" y2="${h-pad}" stroke="#E4DED4" stroke-width="1"/>
+    </svg>
+  `;
+}
+
+async function fetchAndRenderUV(latitude, longitude, placeLabel) {
+  const content = document.getElementById('uvContent');
+  content.innerHTML = '<p class="muted">Loading UV data…</p>';
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=uv_index&timezone=auto`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    const times = data.hourly.time;
+    const uvs = data.hourly.uv_index;
+    const now = new Date();
+    let idx = 0;
+    let minDiff = Infinity;
+    times.forEach((t, i) => {
+      const diff = Math.abs(new Date(t).getTime() - now.getTime());
+      if (diff < minDiff) { minDiff = diff; idx = i; }
+    });
+    const dayStart = Math.max(0, idx - 6);
+    const dayEnd = Math.min(times.length, idx + 7);
+    const hourlySlice = uvs.slice(dayStart, dayEnd);
+    const curUV = uvs[idx];
+    const risk = uvRiskInfo(curUV);
+    const mins = safeMinutes(curUV, skinType);
+    lastSafeMinutes = mins;
+    lastUV = curUV;
+    lastRiskLabel = risk.label;
+    lastPlaceLabel = placeLabel || lastPlaceLabel;
+    if (typeof renderSunlog === 'function') renderSunlog();
+    if (typeof renderTodayDashboard === 'function') renderTodayDashboard();
+    const arcSvg = buildArcSVG(hourlySlice, idx - dayStart);
+
+    content.innerHTML = `
+      ${placeLabel ? `<div class="muted" style="margin-bottom:6px;">${placeLabel}</div>` : ''}
+      <div class="uv-readout">
+        <div class="uv-num">${curUV.toFixed(1)}</div>
+        <div>
+          <div class="risk-pill" style="background:${risk.color}22; color:${risk.color};">${risk.label}</div>
+          <div class="uv-label">UV Index now</div>
+        </div>
+      </div>
+      <div class="arc-box">${arcSvg}</div>
+      <div class="stat-row">
+        <div class="stat">
+          <div class="n">${mins} min</div>
+          <div class="l">Estimated time before burn risk${skinType ? '' : ' (assumes medium skin type — take the quiz for your own estimate)'}</div>
+        </div>
+        <div class="stat">
+          <div class="n">${curUV >= 3 ? 'Yes' : 'Optional'}</div>
+          <div class="l">Sunscreen recommended</div>
+        </div>
+      </div>
+      <div class="banner">Reapply sunscreen every 2 hours, or immediately after swimming or heavy sweating. Seek shade during midday hours when UV peaks.</div>
+      <button class="secondary" id="refreshBtn" style="margin-top:14px;">Refresh</button>
+      <button class="secondary" id="changeLocBtn" style="margin-top:14px;">Change location</button>
+      <button class="secondary" id="jumpSunlogBtn" style="margin-top:14px;">Log time outside →</button>
+    `;
+    document.getElementById('refreshBtn').addEventListener('click', () => fetchAndRenderUV(latitude, longitude, placeLabel));
+    document.getElementById('changeLocBtn').addEventListener('click', resetUVForm);
+    document.getElementById('jumpSunlogBtn').addEventListener('click', () => goToTab('sunlog'));
+  } catch (e) {
+    content.innerHTML = '<p class="muted">Couldn\'t load UV data right now. Try again in a moment.</p><button class="primary" id="retryBtn">Retry</button>';
+    document.getElementById('retryBtn')?.addEventListener('click', () => fetchAndRenderUV(latitude, longitude, placeLabel));
+  }
+}
+
+function resetUVForm() {
+  const content = document.getElementById('uvContent');
+  content.innerHTML = `
+    <p class="muted">Type your city to get a live UV reading and a safe-exposure estimate for your skin type.</p>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <input type="text" id="cityInput" placeholder="e.g. Chicago" style="flex:1; min-width:160px; font-family:'Inter',sans-serif; font-size:14px; padding:10px 12px; border:1px solid rgba(0,0,0,0.08); border-radius:10px; background:#FAF9F6;">
+      <button class="primary" id="citySearchBtn">Get UV index</button>
+    </div>
+    <button class="secondary" id="locBtn" style="margin-top:10px;">Or use my device location</button>
+  `;
+  wireUVButtons();
+}
+
+async function searchCity() {
+  const cityInput = document.getElementById('cityInput');
+  const city = cityInput.value.trim();
+  if (!city) return;
+  const content = document.getElementById('uvContent');
+  content.innerHTML = '<p class="muted">Looking up ' + city + '…</p>';
+  try {
+    const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1`;
+    const geoResp = await fetch(geoUrl);
+    const geoData = await geoResp.json();
+    if (!geoData.results || !geoData.results.length) {
+      content.innerHTML = `<p class="muted">Couldn't find "${city}". Try a different spelling, or the nearest larger city.</p><button class="secondary" id="backBtn">Back</button>`;
+      document.getElementById('backBtn').addEventListener('click', resetUVForm);
+      return;
+    }
+    const place = geoData.results[0];
+    const label = [place.name, place.admin1, place.country].filter(Boolean).join(', ');
+    fetchAndRenderUV(place.latitude, place.longitude, label);
+  } catch (e) {
+    content.innerHTML = `<p class="muted">Couldn't look up that city right now.</p><button class="secondary" id="backBtn">Back</button>`;
+    document.getElementById('backBtn').addEventListener('click', resetUVForm);
+  }
+}
+
+function wireUVButtons() {
+  document.getElementById('citySearchBtn').addEventListener('click', searchCity);
+  document.getElementById('cityInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') searchCity(); });
+  document.getElementById('locBtn').addEventListener('click', () => {
+    const content = document.getElementById('uvContent');
+    content.innerHTML = '<p class="muted">Getting your location…</p>';
+    if (!navigator.geolocation) {
+      content.innerHTML = '<p class="muted">Device location isn\'t available here. Please use the city search instead.</p><button class="secondary" id="backBtn">Back</button>';
+      document.getElementById('backBtn').addEventListener('click', resetUVForm);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition((pos) => {
+      fetchAndRenderUV(pos.coords.latitude, pos.coords.longitude, null);
+    }, () => {
+      content.innerHTML = '<p class="muted">Location access wasn\'t available. Please use the city search instead.</p><button class="secondary" id="backBtn">Back</button>';
+      document.getElementById('backBtn').addEventListener('click', resetUVForm);
+    }, { timeout: 6000 });
+  });
+}
+
+wireUVButtons();
+
+// ---------- Mole Journal ----------
+async function loadEntries() {
+  try {
+    const res = await window.storage.get('mole-entries', false);
+    return res && res.value ? JSON.parse(res.value) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+async function saveEntries(entries) {
+  await window.storage.set('mole-entries', JSON.stringify(entries), false);
+}
+
+function renderEntries(entries) {
+  const list = document.getElementById('entriesList');
+  if (!entries.length) {
+    list.innerHTML = '<p class="muted" style="margin-top:14px;">No entries yet. Add your first one above.</p>';
+    return;
+  }
+  list.innerHTML = entries.slice().reverse().map(e => `
+    <div class="entry">
+      ${e.photo ? `<img src="${e.photo}">` : `<div style="width:64px;height:64px;border-radius:8px;background:var(--skin-light);flex-shrink:0;"></div>`}
+      <div>
+        <div class="meta">${e.date} · ${e.label || 'Unlabeled'}</div>
+        <div class="note">${e.note || ''}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+(async () => {
+  const entries = await loadEntries();
+  renderEntries(entries);
+})();
+
+document.getElementById('addEntryBtn').addEventListener('click', async () => {
+  const fileInput = document.getElementById('photoInput');
+  const label = document.getElementById('labelInput').value.trim();
+  const note = document.getElementById('noteInput').value.trim();
+  const btn = document.getElementById('addEntryBtn');
+
+  const finish = async (photoDataUrl) => {
+    const entries = await loadEntries();
+    entries.push({
+      date: new Date().toLocaleDateString(),
+      label, note,
+      photo: photoDataUrl || null
+    });
+    await saveEntries(entries);
+    renderEntries(entries);
+    if (typeof renderTodayDashboard === 'function') renderTodayDashboard();
+    fileInput.value = '';
+    document.getElementById('labelInput').value = '';
+    document.getElementById('noteInput').value = '';
+    btn.disabled = false;
+    btn.textContent = 'Add entry';
+  };
+
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  if (fileInput.files && fileInput.files[0]) {
+    const reader = new FileReader();
+    reader.onload = () => finish(reader.result);
+    reader.readAsDataURL(fileInput.files[0]);
+  } else {
+    await finish(null);
+  }
+});
+
+// ---------- Sun Log ----------
+function todayKey() {
+  const d = new Date();
+  return 'sunlog-' + d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+async function getTodayMinutes() {
+  try {
+    const res = await window.storage.get(todayKey(), false);
+    return res && res.value ? parseInt(res.value, 10) : 0;
+  } catch (e) {
+    return 0;
+  }
+}
+
+async function setTodayMinutes(mins) {
+  await window.storage.set(todayKey(), String(Math.max(0, mins)), false);
+}
+
+async function renderSunlog() {
+  const total = await getTodayMinutes();
+  document.getElementById('sunlogTotal').textContent = total + ' min';
+  const budgetEl = document.getElementById('sunlogBudget');
+  const barEl = document.getElementById('sunlogBar');
+  const warnEl = document.getElementById('sunlogWarning');
+
+  if (lastSafeMinutes) {
+    budgetEl.textContent = lastSafeMinutes + ' min';
+    const pct = Math.min(100, (total / lastSafeMinutes) * 100);
+    barEl.style.width = pct + '%';
+    barEl.style.background = pct >= 100 ? '#C14A2B' : (pct >= 75 ? '#E2603D' : '#3D8361');
+    if (total >= lastSafeMinutes) {
+      warnEl.style.display = 'block';
+      warnEl.innerHTML = '<strong>You\'ve reached today\'s estimated safe exposure.</strong> Consider shade, a hat, or reapplying sunscreen if you\'re heading back out.';
+    } else {
+      warnEl.style.display = 'none';
+    }
+  } else {
+    budgetEl.textContent = 'Check UV Tracker';
+    barEl.style.width = '0%';
+    warnEl.style.display = 'none';
+  }
+}
+
+renderSunlog();
+
+document.getElementById('addMinutesBtn').addEventListener('click', async () => {
+  const input = document.getElementById('manualMinutes');
+  const val = parseInt(input.value, 10);
+  if (!val || val <= 0) return;
+  const total = await getTodayMinutes();
+  await setTodayMinutes(total + val);
+  input.value = '';
+  renderSunlog();
+  if (typeof renderTodayDashboard === 'function') renderTodayDashboard();
+});
+
+document.getElementById('resetSunlogBtn').addEventListener('click', async () => {
+  await setTodayMinutes(0);
+  renderSunlog();
+  if (typeof renderTodayDashboard === 'function') renderTodayDashboard();
+});
+
+document.getElementById('healthFileInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  const status = document.getElementById('healthImportStatus');
+  if (!file) return;
+  status.textContent = 'Reading file…';
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try {
+      const text = reader.result;
+      const todayStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+      // Match Health export <Record ... type="...TimeInDaylight..." ... startDate="YYYY-MM-DD ..." ... value="N" .../>
+      const recordRegex = /<Record[^>]*type="[^"]*TimeInDaylight[^"]*"[^>]*>/g;
+      const matches = text.match(recordRegex) || [];
+      let sum = 0;
+      let found = 0;
+      matches.forEach(rec => {
+        const dateMatch = rec.match(/startDate="(\d{4}-\d{2}-\d{2})/);
+        const valueMatch = rec.match(/value="([\d.]+)"/);
+        if (dateMatch && valueMatch && dateMatch[1] === todayStr) {
+          sum += parseFloat(valueMatch[1]);
+          found++;
+        }
+      });
+      if (found === 0) {
+        status.textContent = matches.length
+          ? 'Found Time in Daylight records, but none for today\'s date yet. Try again later today, or log manually above.'
+          : 'No "Time in Daylight" records found in this export. Your Apple Watch model or watchOS version may not track this metric — you can still log manually above.';
+        return;
+      }
+      const total = await getTodayMinutes();
+      await setTodayMinutes(total + Math.round(sum));
+      renderSunlog();
+      status.textContent = `Imported ${Math.round(sum)} minutes from ${found} Apple Health record(s) for today.`;
+    } catch (err) {
+      status.textContent = 'Couldn\'t read that file. Make sure it\'s the export.xml from your Apple Health export.';
+    }
+  };
+  reader.readAsText(file);
+});
+
+// ---------- Today Dashboard ----------
+document.getElementById('todayDateLabel').textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+
+async function renderTodayDashboard() {
+  const el = document.getElementById('todayDashboard');
+  const totalMinutes = await getTodayMinutes();
+  const entries = await loadEntries();
+  const lastEntry = entries.length ? entries[entries.length - 1] : null;
+  const daysSinceEntry = lastEntry ? Math.floor((Date.now() - new Date(lastEntry.date).getTime()) / 86400000) : null;
+
+  const uvBlock = lastUV !== null
+    ? `<div class="stat">
+         <div class="n">${lastUV.toFixed(1)}</div>
+         <div class="l">UV index${lastPlaceLabel ? ' · ' + lastPlaceLabel : ''} (${lastRiskLabel})</div>
+       </div>`
+    : `<div class="stat" style="display:flex; flex-direction:column; justify-content:space-between;">
+         <div class="l">No UV reading yet today</div>
+         <button class="secondary" id="dashGoUvBtn" style="margin-top:8px;">Check UV Tracker →</button>
+       </div>`;
+
+  const skinBlock = skinType
+    ? `<div class="stat"><div class="n">Type ${skinType}</div><div class="l">Fitzpatrick skin type</div></div>`
+    : `<div class="stat" style="display:flex; flex-direction:column; justify-content:space-between;">
+         <div class="l">Skin type not set</div>
+         <button class="secondary" id="dashGoQuizBtn" style="margin-top:8px;">Take the quiz →</button>
+       </div>`;
+
+  const sunlogBlock = `
+    <div class="stat">
+      <div class="n">${totalMinutes} min</div>
+      <div class="l">Logged outside today${lastSafeMinutes ? ' of ~' + lastSafeMinutes + ' min budget' : ''}</div>
+    </div>`;
+
+  const moleBlock = lastEntry
+    ? `<div class="stat">
+         <div class="n">${daysSinceEntry === 0 ? 'Today' : daysSinceEntry + 'd ago'}</div>
+         <div class="l">Last mole journal entry</div>
+       </div>`
+    : `<div class="stat" style="display:flex; flex-direction:column; justify-content:space-between;">
+         <div class="l">No mole journal entries yet</div>
+         <button class="secondary" id="dashGoJournalBtn" style="margin-top:8px;">Start a log →</button>
+       </div>`;
+
+  el.innerHTML = `
+    <div class="stat-row">${uvBlock}${sunlogBlock}</div>
+    <div class="stat-row" style="margin-top:12px;">${skinBlock}${moleBlock}</div>
+    ${daysSinceEntry !== null && daysSinceEntry >= 60 ? `<div class="banner" style="margin-top:14px;"><strong>It's been ${daysSinceEntry} days</strong> since your last mole journal entry — worth a quick check and a new photo if anything's changed.</div>` : ''}
+  `;
+
+  document.getElementById('dashGoUvBtn')?.addEventListener('click', () => goToTab('uv'));
+  document.getElementById('dashGoQuizBtn')?.addEventListener('click', () => goToTab('quiz'));
+  document.getElementById('dashGoJournalBtn')?.addEventListener('click', () => goToTab('journal'));
+}
+
+renderTodayDashboard();
+</script>
+</body>
+</html>
