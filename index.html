@@ -280,6 +280,16 @@
 
   <!-- UV TAB -->
   <div id="tab-uv" style="display:none">
+    <div class="card" id="uvSkinTypePrompt" style="display:none; background:var(--skin-light); border:none;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;">
+        <div>
+          <div class="eyebrow">Personalize this</div>
+          <div style="font-weight:700; font-size:15px;">See how long it's safe for your skin type</div>
+        </div>
+        <button class="primary" id="uvGoQuizBtn">Take the quiz →</button>
+      </div>
+    </div>
+
     <div class="card">
       <div class="eyebrow">Right now</div>
       <h2>UV Index</h2>
@@ -437,6 +447,7 @@ document.querySelectorAll('.tab').forEach(btn => {
       document.getElementById('tab-'+t).style.display = (t === btn.dataset.tab) ? 'block' : 'none';
     });
     if (btn.dataset.tab === 'today' && typeof renderTodayDashboard === 'function') renderTodayDashboard();
+    if (btn.dataset.tab === 'uv' && typeof updateUvSkinTypePrompt === 'function') updateUvSkinTypePrompt();
   });
 });
 
@@ -500,6 +511,7 @@ function checkQuizComplete() {
     storage.set('skin-type', String(type)).catch(()=>{});
     if (typeof renderTodayDashboard === 'function') renderTodayDashboard();
     document.getElementById('quizToUvBtn').addEventListener('click', () => goToTab('uv'));
+    if (typeof updateUvSkinTypePrompt === 'function') updateUvSkinTypePrompt();
   }
 }
 
@@ -514,6 +526,7 @@ renderQuiz();
     }
   } catch(e) { /* not set yet */ }
   if (typeof renderTodayDashboard === 'function') renderTodayDashboard();
+  if (typeof updateUvSkinTypePrompt === 'function') updateUvSkinTypePrompt();
 })();
 
 // ---------- Compare Guide (illustrated reference pairs, not real photos) ----------
@@ -768,6 +781,14 @@ async function searchCity() {
     document.getElementById('backBtn').addEventListener('click', resetUVForm);
   }
 }
+
+function updateUvSkinTypePrompt() {
+  const el = document.getElementById('uvSkinTypePrompt');
+  if (!el) return;
+  el.style.display = skinType ? 'none' : 'block';
+}
+
+document.getElementById('uvGoQuizBtn').addEventListener('click', () => goToTab('quiz'));
 
 function wireUVButtons() {
   document.getElementById('citySearchBtn').addEventListener('click', searchCity);
